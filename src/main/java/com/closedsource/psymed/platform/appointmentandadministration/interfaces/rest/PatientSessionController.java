@@ -22,7 +22,7 @@ import java.util.List;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
-@RequestMapping(value = "/api/v1/patients/{patientId}/sessions", produces = APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/v1/patients/{patientId}", produces = APPLICATION_JSON_VALUE)
 @Tag(name = "Patient Sessions", description = "Controller for manage sessions for a patient")
 public class PatientSessionController {
     private final SessionQueryService sessionQueryService;
@@ -37,7 +37,7 @@ public class PatientSessionController {
             @ApiResponse(responseCode = "200", description = "Sessions found"),
             @ApiResponse(responseCode = "404", description = "No sessions found for the patient")
     })
-    @GetMapping
+    @GetMapping("/sessions")
     public ResponseEntity<List<SessionResource>> getAllSessionsByPatientId(@PathVariable String patientId) {
         var query = new GetAllSessionsByPatientIdQuery(patientId);
         var sessions = sessionQueryService.handle(query);

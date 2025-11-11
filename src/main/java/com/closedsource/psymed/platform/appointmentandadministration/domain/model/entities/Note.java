@@ -27,4 +27,13 @@ public class Note extends AuditableModel {
         this.title = title;
         this.description = description;
     }
+
+    public void updateNote(String title, String description) {
+        if (title != null && !title.isBlank()) {
+            this.title = title;
+        }
+        if (description != null && !description.isBlank()) {
+            this.description = description;
+        }
+    }
 }

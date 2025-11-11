@@ -47,12 +47,12 @@ public class Session extends AbstractAggregateRoot<Session> {
     private SessionTime sessionTime;
 
     @Getter
-    @OneToOne(cascade = CascadeType.PERSIST)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "note_id")
     private Note note;
 
     @Getter
-    @OneToMany(mappedBy = "session", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "session", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Task> tasks = new ArrayList<>();
 
 
@@ -113,6 +113,10 @@ public class Session extends AbstractAggregateRoot<Session> {
     public void deleteTask(Long taskId) {
         var task = getTaskById(taskId);
         this.tasks.remove(task);
+    }
+
+    public void deleteNote() {
+        this.note = null;
     }
 
 }

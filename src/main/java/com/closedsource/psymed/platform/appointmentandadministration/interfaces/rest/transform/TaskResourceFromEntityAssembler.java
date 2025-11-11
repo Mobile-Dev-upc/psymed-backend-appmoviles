@@ -5,6 +5,13 @@ import com.closedsource.psymed.platform.appointmentandadministration.interfaces.
 
 public class TaskResourceFromEntityAssembler {
     public static TaskResource toResourceFromEntity(Task entity) {
-        return new TaskResource(entity.getId(), entity.getTitle(), entity.getDescription(), entity.getStatus().status());
+        return new TaskResource(
+                entity.getId(),
+                entity.getSession().getPatientId().patientId(),
+                entity.getSession().getId(),
+                entity.getTitle(),
+                entity.getDescription(),
+                entity.getStatus().status()
+        );
     }
 }

@@ -5,6 +5,12 @@ import com.closedsource.psymed.platform.appointmentandadministration.interfaces.
 
 public class NoteResourceFromEntityAssembler {
     public static NoteResource toResourceFromEntity (Note entity) {
-        return new NoteResource(entity.getId(), entity.getTitle(), entity.getDescription());
+        return new NoteResource(
+                entity.getId(),
+                entity.getTitle(),
+                entity.getDescription(),
+                entity.getCreatedAt(),
+                entity.getUpdatedAt()
+        );
     }
 }

@@ -3,6 +3,7 @@ package com.closedsource.psymed.platform.appointmentandadministration.interfaces
 import com.closedsource.psymed.platform.appointmentandadministration.domain.model.entities.Note;
 import com.closedsource.psymed.platform.appointmentandadministration.domain.model.entities.Task;
 import com.closedsource.psymed.platform.appointmentandadministration.domain.model.queries.GetAllTasksBySessionIdQuery;
+import com.closedsource.psymed.platform.appointmentandadministration.domain.model.queries.GetNoteBySessionIdQuery;
 import com.closedsource.psymed.platform.appointmentandadministration.domain.services.SessionCommandService;
 import com.closedsource.psymed.platform.appointmentandadministration.domain.services.SessionQueryService;
 import com.closedsource.psymed.platform.appointmentandadministration.interfaces.rest.resources.AddNoteToSessionResource;
@@ -10,6 +11,7 @@ import com.closedsource.psymed.platform.appointmentandadministration.interfaces.
 import com.closedsource.psymed.platform.appointmentandadministration.interfaces.rest.resources.NoteResource;
 import com.closedsource.psymed.platform.appointmentandadministration.interfaces.rest.resources.TaskResource;
 import com.closedsource.psymed.platform.appointmentandadministration.interfaces.rest.resources.UpdateTaskResource;
+import com.closedsource.psymed.platform.appointmentandadministration.interfaces.rest.resources.UpdateNoteResource;
 import com.closedsource.psymed.platform.appointmentandadministration.interfaces.rest.transform.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -50,6 +52,47 @@ public class SessionToolsController {
                 new ResponseEntity<>(NoteResourceFromEntityAssembler
                         .toResourceFromEntity(n), CREATED)).orElseGet(() -> ResponseEntity.badRequest().build());
 
+    }
+
+    @Operation(summary = "Get note from a session")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Note found"),
+            @ApiResponse(responseCode = "404", description = "Session not found or session has no note"),
+            @ApiResponse(responseCode = "400", description = "Invalid input")
+    })
+    @GetMapping("/notes")
+    public ResponseEntity<NoteResource> getNoteBySessionId(@PathVariable Long sessionId) {
+        var getNoteBySessionIdQuery = new GetNoteBySessionIdQuery(sessionId);
+        var note = sessionQueryService.handle(getNoteBySessionIdQuery);
+        return note.map(n -> ResponseEntity.ok(NoteResourceFromEntityAssembler.toResourceFromEntity(n)))
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @Operation(summary = "Update note from a session")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Note updated successfully"),
+            @ApiResponse(responseCode = "404", description = "Session not found or session has no note"),
+            @ApiResponse(responseCode = "400", description = "Invalid input")
+    })
+    @PutMapping("/notes")
+    public ResponseEntity<NoteResource> updateNoteFromSession(@PathVariable Long sessionId, @RequestBody UpdateNoteResource resource) {
+        var command = UpdateNoteCommandFromResourceAssembler.toCommandFromResource(sessionId, resource);
+        var note = sessionCommandService.handle(command);
+        return note.map(n -> ResponseEntity.ok(NoteResourceFromEntityAssembler.toResourceFromEntity(n)))
+                .orElseGet(() -> ResponseEntity.badRequest().build());
+    }
+
+    @Operation(summary = "Delete note from a session")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Note deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "Session not found or session has no note"),
+            @ApiResponse(responseCode = "400", description = "Invalid input")
+    })
+    @DeleteMapping("/notes")
+    public ResponseEntity<Void> deleteNoteFromSession(@PathVariable Long sessionId) {
+        var command = new com.closedsource.psymed.platform.appointmentandadministration.domain.model.commands.DeleteNoteFromSessionCommand(sessionId);
+        sessionCommandService.handle(command);
+        return ResponseEntity.noContent().build();
     }
 
     @Operation(summary="Add task to a session")

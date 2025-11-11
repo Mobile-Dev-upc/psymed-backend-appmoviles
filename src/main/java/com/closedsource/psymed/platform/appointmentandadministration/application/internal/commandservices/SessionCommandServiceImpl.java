@@ -11,6 +11,8 @@ import com.closedsource.psymed.platform.appointmentandadministration.domain.mode
 import com.closedsource.psymed.platform.appointmentandadministration.domain.model.commands.UpdateTaskStatusToCompleteCommand;
 import com.closedsource.psymed.platform.appointmentandadministration.domain.model.commands.UpdateTaskCommand;
 import com.closedsource.psymed.platform.appointmentandadministration.domain.model.commands.DeleteTaskCommand;
+import com.closedsource.psymed.platform.appointmentandadministration.domain.model.commands.DeleteNoteFromSessionCommand;
+import com.closedsource.psymed.platform.appointmentandadministration.domain.model.commands.UpdateNoteCommand;
 import com.closedsource.psymed.platform.appointmentandadministration.domain.model.entities.Note;
 import com.closedsource.psymed.platform.appointmentandadministration.domain.model.entities.Task;
 import com.closedsource.psymed.platform.appointmentandadministration.domain.services.SessionCommandService;
@@ -129,6 +131,43 @@ public class SessionCommandServiceImpl implements SessionCommandService {
             sessionRepository.save(session);
         } catch(Exception e) {
             throw new IllegalArgumentException("Error deleting task: %s".formatted(e.getMessage()));
+        }
+    }
+
+    @Override
+    @Transactional
+    public void handle(DeleteNoteFromSessionCommand command) {
+        if(!sessionRepository.existsById(command.sessionId())) 
+            throw new IllegalArgumentException("Session does not exist");
+        
+        try {
+            var session = sessionRepository.findById(command.sessionId()).get();
+            if(session.getNote() == null) {
+                throw new IllegalStateException("Session does not have a note to delete");
+            }
+            session.deleteNote();
+            sessionRepository.save(session);
+        } catch(Exception e) {
+            throw new IllegalArgumentException("Error deleting note: %s".formatted(e.getMessage()));
+        }
+    }
+
+    @Override
+    @Transactional
+    public Optional<Note> handle(UpdateNoteCommand command) {
+        if(!sessionRepository.existsById(command.sessionId())) 
+            throw new IllegalArgumentException("Session does not exist");
+        
+        try {
+            var session = sessionRepository.findById(command.sessionId()).get();
+            if(session.getNote() == null) {
+                throw new IllegalStateException("Session does not have a note to update");
+            }
+            session.getNote().updateNote(command.title(), command.description());
+            sessionRepository.save(session);
+            return Optional.of(session.getNote());
+        } catch(Exception e) {
+            throw new IllegalArgumentException("Error updating note: %s".formatted(e.getMessage()));
         }
     }
 

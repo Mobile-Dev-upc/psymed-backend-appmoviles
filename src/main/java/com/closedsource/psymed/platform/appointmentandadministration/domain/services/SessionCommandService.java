@@ -7,6 +7,7 @@ import com.closedsource.psymed.platform.appointmentandadministration.domain.mode
 import com.closedsource.psymed.platform.appointmentandadministration.domain.model.commands.UpdateTaskStatusToCompleteCommand;
 import com.closedsource.psymed.platform.appointmentandadministration.domain.model.commands.UpdateTaskCommand;
 import com.closedsource.psymed.platform.appointmentandadministration.domain.model.commands.DeleteTaskCommand;
+import com.closedsource.psymed.platform.appointmentandadministration.domain.model.commands.DeleteNoteFromSessionCommand;
 import com.closedsource.psymed.platform.appointmentandadministration.domain.model.entities.Note;
 import com.closedsource.psymed.platform.appointmentandadministration.domain.model.entities.Task;
 
@@ -39,4 +40,8 @@ public interface SessionCommandService {
     Optional<Task> handle(UpdateTaskCommand command);
 
     void handle(DeleteTaskCommand command);
+
+    void handle(DeleteNoteFromSessionCommand command);
+
+    Optional<com.closedsource.psymed.platform.appointmentandadministration.domain.model.entities.Note> handle(com.closedsource.psymed.platform.appointmentandadministration.domain.model.commands.UpdateNoteCommand command);
 }
