@@ -5,6 +5,6 @@ import com.closedsource.psymed.platform.patientreport.interfaces.rest.resources.
 
 public class MoodStateResourceFromEntityAssembler {
     public static MoodStateResource toResourceFromEntity (MoodState entity) {
-        return new MoodStateResource(entity.getId(), entity.getStatus());
+        return new MoodStateResource(entity.getId(), entity.getStatus(), entity.getCreatedAt());
     }
 }

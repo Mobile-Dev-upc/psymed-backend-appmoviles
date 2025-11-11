@@ -1,4 +1,6 @@
 package com.closedsource.psymed.platform.patientreport.interfaces.rest.resources;
 
-public record MoodStateResource(Long id, Integer status) {
+import java.util.Date;
+
+public record MoodStateResource(Long id, Integer status, Date createdAt) {
 }
