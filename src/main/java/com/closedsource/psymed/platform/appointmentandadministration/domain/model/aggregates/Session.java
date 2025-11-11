@@ -105,4 +105,14 @@ public class Session extends AbstractAggregateRoot<Session> {
                 .findFirst().orElseThrow(() -> new IllegalStateException("Task with id %s not found".formatted(taskId)));
     }
 
+    public void updateTask(Long taskId, String title, String description) {
+        var task = getTaskById(taskId);
+        task.updateTask(title, description);
+    }
+
+    public void deleteTask(Long taskId) {
+        var task = getTaskById(taskId);
+        this.tasks.remove(task);
+    }
+
 }

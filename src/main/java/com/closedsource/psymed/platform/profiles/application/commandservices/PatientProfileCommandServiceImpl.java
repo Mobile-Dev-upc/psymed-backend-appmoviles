@@ -6,6 +6,8 @@ import com.closedsource.psymed.platform.profiles.domain.model.aggregates.Patient
 import com.closedsource.psymed.platform.profiles.domain.model.commands.AddClinicalHistoryToPatientCommand;
 import com.closedsource.psymed.platform.profiles.domain.model.commands.CheckPatientProfileByIdCommand;
 import com.closedsource.psymed.platform.profiles.domain.model.commands.CreatePatientProfileCommand;
+import com.closedsource.psymed.platform.profiles.domain.model.commands.UpdatePatientProfileCommand;
+import com.closedsource.psymed.platform.profiles.domain.model.commands.DeletePatientProfileCommand;
 import com.closedsource.psymed.platform.profiles.domain.model.valueobjects.Email;
 import com.closedsource.psymed.platform.profiles.domain.services.PatientProfileCommandService;
 import com.closedsource.psymed.platform.profiles.infrastructure.persistence.jpa.repositories.PatientProfileRepository;
@@ -73,5 +75,49 @@ public class PatientProfileCommandServiceImpl implements PatientProfileCommandSe
 
 
 
+    }
+
+    @Override
+    @Transactional
+    public Optional<PatientProfile> handle(UpdatePatientProfileCommand command) {
+        if (!patientProfileRepository.existsById(command.id()))
+            throw new IllegalArgumentException("Patient profile not found");
+
+        var patientProfile = patientProfileRepository.findById(command.id()).get();
+        
+        // Update fields
+        if (command.firstName() != null && command.lastName() != null) {
+            patientProfile.updateName(command.firstName(), command.lastName());
+        }
+        
+        if (command.email() != null) {
+            var newEmail = new Email(command.email());
+            // Check if email is already taken by another profile
+            var existingProfileWithEmail = patientProfileRepository.findByEmail(newEmail);
+            if (existingProfileWithEmail.isPresent() && !existingProfileWithEmail.get().getId().equals(command.id())) {
+                throw new IllegalArgumentException("Email already exists");
+            }
+            var existingProfessionalWithEmail = professionalProfileRepository.findByEmail(newEmail);
+            if (existingProfessionalWithEmail.isPresent()) {
+                throw new IllegalArgumentException("Email already exists");
+            }
+            patientProfile.updateEmail(command.email());
+        }
+        
+        if (command.street() != null && command.city() != null && command.country() != null) {
+            patientProfile.updateAddress(command.street(), command.city(), command.country());
+        }
+        
+        patientProfileRepository.save(patientProfile);
+        return Optional.of(patientProfile);
+    }
+
+    @Override
+    @Transactional
+    public void handle(DeletePatientProfileCommand command) {
+        if (!patientProfileRepository.existsById(command.id()))
+            throw new IllegalArgumentException("Patient profile not found");
+        
+        patientProfileRepository.deleteById(command.id());
     }
 }

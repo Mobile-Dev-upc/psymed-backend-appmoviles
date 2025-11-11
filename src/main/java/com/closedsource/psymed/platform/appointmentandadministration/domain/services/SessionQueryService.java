@@ -57,4 +57,6 @@ public interface SessionQueryService {
     Optional<Note> handle(GetNoteBySessionIdQuery query);
 
     List<Task> handle(GetAllTasksBySessionIdQuery query);
+
+    List<Task> handle(GetAllTasksByPatientIdQuery query);
 }

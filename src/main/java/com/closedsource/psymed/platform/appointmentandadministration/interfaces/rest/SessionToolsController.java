@@ -9,6 +9,7 @@ import com.closedsource.psymed.platform.appointmentandadministration.interfaces.
 import com.closedsource.psymed.platform.appointmentandadministration.interfaces.rest.resources.AddTaskToSessionResource;
 import com.closedsource.psymed.platform.appointmentandadministration.interfaces.rest.resources.NoteResource;
 import com.closedsource.psymed.platform.appointmentandadministration.interfaces.rest.resources.TaskResource;
+import com.closedsource.psymed.platform.appointmentandadministration.interfaces.rest.resources.UpdateTaskResource;
 import com.closedsource.psymed.platform.appointmentandadministration.interfaces.rest.transform.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -86,6 +87,33 @@ public class SessionToolsController {
         var tasks = sessionQueryService.handle(getAllTasksBySessionIdQuery);
         var taskResources = tasks.stream().map(TaskResourceFromEntityAssembler::toResourceFromEntity).toList();
         return ResponseEntity.ok(taskResources);
+    }
+
+    @Operation(summary="Update a task")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Task updated successfully"),
+            @ApiResponse(responseCode = "404", description = "Session or task not found"),
+            @ApiResponse(responseCode = "400", description = "Invalid input")
+    })
+    @PutMapping("/tasks/{taskId}")
+    public ResponseEntity<TaskResource> updateTask(@PathVariable Long sessionId, @PathVariable Long taskId, @RequestBody UpdateTaskResource resource) {
+        var command = UpdateTaskCommandFromResourceAssembler.toCommandFromResource(sessionId, taskId, resource);
+        var task = sessionCommandService.handle(command);
+        return task.map(t -> ResponseEntity.ok(TaskResourceFromEntityAssembler.toResourceFromEntity(t)))
+                .orElseGet(() -> ResponseEntity.badRequest().build());
+    }
+
+    @Operation(summary="Delete a task")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Task deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "Session or task not found"),
+            @ApiResponse(responseCode = "400", description = "Invalid input")
+    })
+    @DeleteMapping("/tasks/{taskId}")
+    public ResponseEntity<Void> deleteTask(@PathVariable Long sessionId, @PathVariable Long taskId) {
+        var command = DeleteTaskCommandFromResourceAssembler.toCommandFromResource(sessionId, taskId);
+        sessionCommandService.handle(command);
+        return ResponseEntity.noContent().build();
     }
 
 }

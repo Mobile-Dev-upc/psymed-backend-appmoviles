@@ -9,6 +9,8 @@ import com.closedsource.psymed.platform.appointmentandadministration.domain.mode
 import com.closedsource.psymed.platform.appointmentandadministration.domain.model.commands.AddTaskToSessionCommand;
 import com.closedsource.psymed.platform.appointmentandadministration.domain.model.commands.CreateSessionCommand;
 import com.closedsource.psymed.platform.appointmentandadministration.domain.model.commands.UpdateTaskStatusToCompleteCommand;
+import com.closedsource.psymed.platform.appointmentandadministration.domain.model.commands.UpdateTaskCommand;
+import com.closedsource.psymed.platform.appointmentandadministration.domain.model.commands.DeleteTaskCommand;
 import com.closedsource.psymed.platform.appointmentandadministration.domain.model.entities.Note;
 import com.closedsource.psymed.platform.appointmentandadministration.domain.model.entities.Task;
 import com.closedsource.psymed.platform.appointmentandadministration.domain.services.SessionCommandService;
@@ -95,6 +97,38 @@ public class SessionCommandServiceImpl implements SessionCommandService {
             sessionRepository.save(session);
         } catch(Exception e) {
             throw new IllegalArgumentException("Error updating task status: %s".formatted(e.getMessage()));
+        }
+    }
+
+    @Override
+    @Transactional
+    public Optional<Task> handle(UpdateTaskCommand command) {
+        if(!sessionRepository.existsById(command.sessionId())) 
+            throw new IllegalArgumentException("Session does not exist");
+        
+        try {
+            var session = sessionRepository.findById(command.sessionId()).get();
+            session.updateTask(command.taskId(), command.title(), command.description());
+            sessionRepository.save(session);
+            var updatedTask = session.getTaskById(command.taskId());
+            return Optional.of(updatedTask);
+        } catch(Exception e) {
+            throw new IllegalArgumentException("Error updating task: %s".formatted(e.getMessage()));
+        }
+    }
+
+    @Override
+    @Transactional
+    public void handle(DeleteTaskCommand command) {
+        if(!sessionRepository.existsById(command.sessionId())) 
+            throw new IllegalArgumentException("Session does not exist");
+        
+        try {
+            var session = sessionRepository.findById(command.sessionId()).get();
+            session.deleteTask(command.taskId());
+            sessionRepository.save(session);
+        } catch(Exception e) {
+            throw new IllegalArgumentException("Error deleting task: %s".formatted(e.getMessage()));
         }
     }
 

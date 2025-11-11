@@ -72,4 +72,14 @@ public class SessionQueryServiceImpl implements SessionQueryService {
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("Session does not have any tasks."));
     }
+
+    @Override
+    public List<Task> handle(GetAllTasksByPatientIdQuery query) {
+        var patientId = new PatientId(query.patientId());
+        var sessions = sessionRepository.findAllByPatientId(patientId);
+        
+        return sessions.stream()
+                .flatMap(session -> session.getTasks().stream())
+                .toList();
+    }
 }

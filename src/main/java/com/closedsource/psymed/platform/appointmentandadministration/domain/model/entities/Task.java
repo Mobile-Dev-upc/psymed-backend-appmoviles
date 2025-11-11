@@ -38,7 +38,13 @@ public class Task extends AuditableModel {
         this.status = this.status.changeToCompleted();
     }
 
-
-
+    public void updateTask(String title, String description) {
+        if (title != null && !title.isBlank()) {
+            this.title = title;
+        }
+        if (description != null && !description.isBlank()) {
+            this.description = description;
+        }
+    }
 
 }

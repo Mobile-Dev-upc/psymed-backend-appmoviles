@@ -9,6 +9,6 @@ import java.util.Optional;
 
 public interface ProfessionalProfileRepository extends JpaRepository<ProfessionalProfile, Long> {
     boolean existsByEmail(Email email);
-
+    Optional<ProfessionalProfile> findByEmail(Email email);
     Optional<ProfessionalProfile> findByAccountId(AccountId accountId);
 }

@@ -5,12 +5,15 @@ import com.closedsource.psymed.platform.profiles.domain.model.queries.GetPatient
 import com.closedsource.psymed.platform.profiles.domain.model.queries.GetPatientProfileByIdQuery;
 import com.closedsource.psymed.platform.profiles.domain.model.queries.GetPatientProfileByProfessionalIdQuery;
 import com.closedsource.psymed.platform.profiles.domain.model.valueobjects.AccountId;
+import com.closedsource.psymed.platform.profiles.domain.model.commands.DeletePatientProfileCommand;
 import com.closedsource.psymed.platform.profiles.domain.services.PatientProfileCommandService;
 import com.closedsource.psymed.platform.profiles.domain.services.PatientProfileQueryService;
 import com.closedsource.psymed.platform.profiles.interfaces.rest.resources.CreatePatientProfileResource;
 import com.closedsource.psymed.platform.profiles.interfaces.rest.resources.ProfileResource;
+import com.closedsource.psymed.platform.profiles.interfaces.rest.resources.UpdatePatientProfileResource;
 import com.closedsource.psymed.platform.profiles.interfaces.rest.transform.CreatePatientProfileCommandFromResourceAssembler;
 import com.closedsource.psymed.platform.profiles.interfaces.rest.transform.ProfileResourceFromEntityAssembler;
+import com.closedsource.psymed.platform.profiles.interfaces.rest.transform.UpdatePatientProfileCommandFromResourceAssembler;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 
@@ -81,5 +84,23 @@ public class PatientProfileController {
         var profileResources = profiles.stream().map(ProfileResourceFromEntityAssembler::toResourceFromEntity)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(profileResources);
+    }
+
+    @PutMapping("/{profileId}")
+    public ResponseEntity<ProfileResource> updateProfile(@PathVariable Long profileId, @RequestBody UpdatePatientProfileResource resource) {
+        var updatePatientProfileCommand = UpdatePatientProfileCommandFromResourceAssembler.toCommandFromResource(profileId, resource);
+        var profile = patientProfileCommandService.handle(updatePatientProfileCommand);
+        
+        if (profile.isEmpty()) return ResponseEntity.badRequest().build();
+        
+        var profileResource = ProfileResourceFromEntityAssembler.toResourceFromEntity(profile.get());
+        return ResponseEntity.ok(profileResource);
+    }
+
+    @DeleteMapping("/{profileId}")
+    public ResponseEntity<Void> deleteProfile(@PathVariable Long profileId) {
+        var deletePatientProfileCommand = new DeletePatientProfileCommand(profileId);
+        patientProfileCommandService.handle(deletePatientProfileCommand);
+        return ResponseEntity.noContent().build();
     }
 }

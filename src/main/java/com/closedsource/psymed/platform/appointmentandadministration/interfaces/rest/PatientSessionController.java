@@ -1,9 +1,12 @@
 package com.closedsource.psymed.platform.appointmentandadministration.interfaces.rest;
 
 import com.closedsource.psymed.platform.appointmentandadministration.domain.model.queries.GetAllSessionsByPatientIdQuery;
+import com.closedsource.psymed.platform.appointmentandadministration.domain.model.queries.GetAllTasksByPatientIdQuery;
 import com.closedsource.psymed.platform.appointmentandadministration.domain.services.SessionQueryService;
 import com.closedsource.psymed.platform.appointmentandadministration.interfaces.rest.resources.SessionResource;
+import com.closedsource.psymed.platform.appointmentandadministration.interfaces.rest.resources.TaskResource;
 import com.closedsource.psymed.platform.appointmentandadministration.interfaces.rest.transform.SessionResourceFromEntityAssembler;
+import com.closedsource.psymed.platform.appointmentandadministration.interfaces.rest.transform.TaskResourceFromEntityAssembler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -45,5 +48,21 @@ public class PatientSessionController {
         return ResponseEntity.ok(sessionResources);
     }
 
+    @Operation(summary = "Get all tasks for a patient",
+            description = "Retrieve all tasks across all sessions for a given patient")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Tasks found"),
+            @ApiResponse(responseCode = "404", description = "No tasks found for the patient")
+    })
+    @GetMapping("/tasks")
+    public ResponseEntity<List<TaskResource>> getAllTasksByPatientId(@PathVariable String patientId) {
+        Long patientIdAsLong = Long.parseLong(patientId);
+        var query = new GetAllTasksByPatientIdQuery(patientIdAsLong);
+        var tasks = sessionQueryService.handle(query);
+        var taskResources = tasks.stream()
+                .map(TaskResourceFromEntityAssembler::toResourceFromEntity)
+                .toList();
+        return ResponseEntity.ok(taskResources);
+    }
 
 }
