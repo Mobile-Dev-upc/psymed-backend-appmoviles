@@ -11,4 +11,8 @@ public record TaskStatus(Short status) {
     public TaskStatus changeToCompleted() {
         return new TaskStatus((short) 1);
     }
+
+    public TaskStatus changeToIncomplete() {
+        return new TaskStatus((short) 0);
+    }
 }

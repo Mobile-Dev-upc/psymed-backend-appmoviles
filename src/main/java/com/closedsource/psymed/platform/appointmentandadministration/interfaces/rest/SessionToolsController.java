@@ -124,6 +124,19 @@ public class SessionToolsController {
         return ResponseEntity.ok("Task status updated to complete");
     }
 
+    @Operation(summary="Mark task as incomplete")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Task marked as incomplete"),
+            @ApiResponse(responseCode = "404", description = "Session not found"),
+            @ApiResponse(responseCode = "400", description = "Invalid input")
+    })
+    @PostMapping("/tasks/{taskId}/incomplete")
+    public ResponseEntity<String> updateTaskStatusToIncomplete(@PathVariable Long sessionId, @PathVariable  Long taskId) {
+        var command = UpdateTaskStatusToIncompleteCommandFromResourceAssembler.toCommandFromResource(sessionId, taskId);
+        sessionCommandService.handle(command);
+        return ResponseEntity.ok("Task status updated to incomplete");
+    }
+
     @GetMapping("/tasks")
     public ResponseEntity<List<TaskResource>> getAllTasksBySessionId(@PathVariable Long sessionId) {
         var getAllTasksBySessionIdQuery = new GetAllTasksBySessionIdQuery(sessionId);

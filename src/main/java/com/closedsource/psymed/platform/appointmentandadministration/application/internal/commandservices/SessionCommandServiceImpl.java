@@ -9,6 +9,7 @@ import com.closedsource.psymed.platform.appointmentandadministration.domain.mode
 import com.closedsource.psymed.platform.appointmentandadministration.domain.model.commands.AddTaskToSessionCommand;
 import com.closedsource.psymed.platform.appointmentandadministration.domain.model.commands.CreateSessionCommand;
 import com.closedsource.psymed.platform.appointmentandadministration.domain.model.commands.UpdateTaskStatusToCompleteCommand;
+import com.closedsource.psymed.platform.appointmentandadministration.domain.model.commands.UpdateTaskStatusToIncompleteCommand;
 import com.closedsource.psymed.platform.appointmentandadministration.domain.model.commands.UpdateTaskCommand;
 import com.closedsource.psymed.platform.appointmentandadministration.domain.model.commands.DeleteTaskCommand;
 import com.closedsource.psymed.platform.appointmentandadministration.domain.model.commands.DeleteNoteFromSessionCommand;
@@ -96,6 +97,19 @@ public class SessionCommandServiceImpl implements SessionCommandService {
             var session = sessionRepository.findById(command.sessionId()).get();
             var task = session.getTaskById(command.taskId());
             task.completeTask();
+            sessionRepository.save(session);
+        } catch(Exception e) {
+            throw new IllegalArgumentException("Error updating task status: %s".formatted(e.getMessage()));
+        }
+    }
+
+    @Override
+    public void handle(UpdateTaskStatusToIncompleteCommand command) {
+        if(!sessionRepository.existsById(command.sessionId())) throw new IllegalArgumentException("Session does not exist");
+        try{
+            var session = sessionRepository.findById(command.sessionId()).get();
+            var task = session.getTaskById(command.taskId());
+            task.incompleteTask();
             sessionRepository.save(session);
         } catch(Exception e) {
             throw new IllegalArgumentException("Error updating task status: %s".formatted(e.getMessage()));
