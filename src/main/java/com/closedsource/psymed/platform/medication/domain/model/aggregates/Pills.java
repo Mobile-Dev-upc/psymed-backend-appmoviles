@@ -40,4 +40,12 @@ public class Pills extends AuditableAbstractAggregateRoot<Pills> {
     public Pills() {
 
     }
+
+    public Pills updateInformation(String name, String description, String interval, String quantity) {
+        this.name = name;
+        this.description = description;
+        this.interval = interval;
+        this.quantity = quantity;
+        return this;
+    }
 }

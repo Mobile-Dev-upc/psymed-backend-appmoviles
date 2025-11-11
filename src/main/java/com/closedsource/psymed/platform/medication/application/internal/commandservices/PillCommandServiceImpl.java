@@ -3,9 +3,12 @@ package com.closedsource.psymed.platform.medication.application.internal.command
 import com.closedsource.psymed.platform.medication.domain.model.aggregates.Pills;
 import com.closedsource.psymed.platform.medication.domain.model.commands.CreatePillsCommand;
 import com.closedsource.psymed.platform.medication.domain.model.commands.DeletePillsCommand;
+import com.closedsource.psymed.platform.medication.domain.model.commands.UpdatePillCommand;
 import com.closedsource.psymed.platform.medication.domain.services.PillCommandService;
 import com.closedsource.psymed.platform.medication.infrastructure.persistence.jpa.repositories.PillRepository;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 public class PillCommandServiceImpl implements PillCommandService {
@@ -15,6 +18,7 @@ public class PillCommandServiceImpl implements PillCommandService {
     public PillCommandServiceImpl(PillRepository pillRepository){
         this.pillRepository = pillRepository;
     }
+    
     @Override
     public Long handle(CreatePillsCommand command) {
         if (pillRepository.existsByName(command.name()))
@@ -37,6 +41,32 @@ public class PillCommandServiceImpl implements PillCommandService {
         } catch(Exception e)
         {
             throw new IllegalArgumentException("An error occurred during delete: %s".formatted(e.getMessage()));
+        }
+    }
+
+    @Override
+    public Optional<Pills> handle(UpdatePillCommand command) {
+        if (!pillRepository.existsById(command.pillId()))
+            throw new IllegalStateException("The medication doesn't exist");
+        
+        var pillToUpdate = pillRepository.findById(command.pillId());
+        
+        if (pillToUpdate.isEmpty())
+            throw new IllegalStateException("The medication doesn't exist");
+        
+        var updatedPill = pillToUpdate.get();
+        
+        try {
+            updatedPill.updateInformation(
+                command.name(),
+                command.description(),
+                command.interval(),
+                command.quantity()
+            );
+            pillRepository.save(updatedPill);
+            return Optional.of(updatedPill);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("An error occurred during update: %s".formatted(e.getMessage()));
         }
     }
 }

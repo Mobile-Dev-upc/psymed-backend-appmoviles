@@ -1,6 +1,7 @@
 package com.closedsource.psymed.platform.medication.interfaces;
 
 import com.closedsource.psymed.platform.medication.domain.model.commands.DeletePillsCommand;
+import com.closedsource.psymed.platform.medication.domain.model.commands.UpdatePillCommand;
 import com.closedsource.psymed.platform.medication.domain.model.queries.GetAllPillsQuery;
 import com.closedsource.psymed.platform.medication.domain.model.queries.GetPillsByIdQuery;
 import com.closedsource.psymed.platform.medication.domain.model.queries.GetPillsByPatientId;
@@ -8,8 +9,10 @@ import com.closedsource.psymed.platform.medication.domain.services.PillCommandSe
 import com.closedsource.psymed.platform.medication.domain.services.PillQueryService;
 import com.closedsource.psymed.platform.medication.interfaces.rest.resources.CreatePillResource;
 import com.closedsource.psymed.platform.medication.interfaces.rest.resources.PillResource;
+import com.closedsource.psymed.platform.medication.interfaces.rest.resources.UpdatePillResource;
 import com.closedsource.psymed.platform.medication.interfaces.rest.transform.CreatePillCommandFromResourceAssembler;
 import com.closedsource.psymed.platform.medication.interfaces.rest.transform.PillResourceFromEntityAssembler;
+import com.closedsource.psymed.platform.medication.interfaces.rest.transform.UpdatePillCommandFromResourceAssembler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -83,6 +86,27 @@ public class PillController {
         return ResponseEntity.ok(medicationResources);
     }
 
+
+    @Operation(summary = "Update a Pill")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Pill updated"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
+            @ApiResponse(responseCode = "404", description = "Pill not found")
+    })
+    @PutMapping("/{pillId}")
+    public ResponseEntity<PillResource> updateMedication(
+            @PathVariable Long pillId,
+            @RequestBody UpdatePillResource updatePillResource) {
+        var updatePillCommand = UpdatePillCommandFromResourceAssembler
+                .toCommandFromResource(pillId, updatePillResource);
+        var updatedPill = pillCommandService.handle(updatePillCommand);
+        
+        if (updatedPill.isEmpty())
+            return ResponseEntity.badRequest().build();
+        
+        var pillResource = PillResourceFromEntityAssembler.toResourceFromEntity(updatedPill.get());
+        return ResponseEntity.ok(pillResource);
+    }
 
     @Operation(summary = "Delete a Pill")
     @ApiResponses(value = {
