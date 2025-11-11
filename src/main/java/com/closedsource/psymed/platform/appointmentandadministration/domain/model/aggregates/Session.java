@@ -119,4 +119,9 @@ public class Session extends AbstractAggregateRoot<Session> {
         this.note = null;
     }
 
+    public void reschedule(Date newAppointmentDate, double newSessionTime) {
+        this.appointmentDate = new AppointmentDate(newAppointmentDate);
+        this.sessionTime = new SessionTime(newSessionTime);
+    }
+
 }

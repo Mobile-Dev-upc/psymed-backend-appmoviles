@@ -8,12 +8,14 @@ import com.closedsource.psymed.platform.appointmentandadministration.domain.mode
 import com.closedsource.psymed.platform.appointmentandadministration.domain.model.commands.AddNoteToSessionCommand;
 import com.closedsource.psymed.platform.appointmentandadministration.domain.model.commands.AddTaskToSessionCommand;
 import com.closedsource.psymed.platform.appointmentandadministration.domain.model.commands.CreateSessionCommand;
+import com.closedsource.psymed.platform.appointmentandadministration.domain.model.commands.DeleteSessionCommand;
 import com.closedsource.psymed.platform.appointmentandadministration.domain.model.commands.UpdateTaskStatusToCompleteCommand;
 import com.closedsource.psymed.platform.appointmentandadministration.domain.model.commands.UpdateTaskStatusToIncompleteCommand;
 import com.closedsource.psymed.platform.appointmentandadministration.domain.model.commands.UpdateTaskCommand;
 import com.closedsource.psymed.platform.appointmentandadministration.domain.model.commands.DeleteTaskCommand;
 import com.closedsource.psymed.platform.appointmentandadministration.domain.model.commands.DeleteNoteFromSessionCommand;
 import com.closedsource.psymed.platform.appointmentandadministration.domain.model.commands.UpdateNoteCommand;
+import com.closedsource.psymed.platform.appointmentandadministration.domain.model.commands.UpdateSessionCommand;
 import com.closedsource.psymed.platform.appointmentandadministration.domain.model.entities.Note;
 import com.closedsource.psymed.platform.appointmentandadministration.domain.model.entities.Task;
 import com.closedsource.psymed.platform.appointmentandadministration.domain.services.SessionCommandService;
@@ -182,6 +184,60 @@ public class SessionCommandServiceImpl implements SessionCommandService {
             return Optional.of(session.getNote());
         } catch(Exception e) {
             throw new IllegalArgumentException("Error updating note: %s".formatted(e.getMessage()));
+        }
+    }
+
+    @Override
+    @Transactional
+    public Optional<Session> handle(UpdateSessionCommand command) {
+        var sessionOptional = sessionRepository.findById(command.sessionId());
+
+        if (sessionOptional.isEmpty()) {
+            throw new IllegalStateException("Session does not exist");
+        }
+
+        var session = sessionOptional.get();
+
+        if (!session.getPatientId().patientId().equals(command.patientId())) {
+            throw new IllegalStateException("Session does not belong to the specified patient");
+        }
+
+        if (!session.getProfessionalId().professionalId().equals(command.professionalId())) {
+            throw new IllegalStateException("Session does not belong to the specified professional");
+        }
+
+        try {
+            session.reschedule(command.appointmentDate(), command.sessionTime());
+            sessionRepository.save(session);
+            return Optional.of(session);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Error updating session: %s".formatted(e.getMessage()));
+        }
+    }
+
+    @Override
+    @Transactional
+    public void handle(DeleteSessionCommand command) {
+        var sessionOptional = sessionRepository.findById(command.sessionId());
+
+        if (sessionOptional.isEmpty()) {
+            throw new IllegalStateException("Session does not exist");
+        }
+
+        var session = sessionOptional.get();
+
+        if (!session.getPatientId().patientId().equals(command.patientId())) {
+            throw new IllegalStateException("Session does not belong to the specified patient");
+        }
+
+        if (!session.getProfessionalId().professionalId().equals(command.professionalId())) {
+            throw new IllegalStateException("Session does not belong to the specified professional");
+        }
+
+        try {
+            sessionRepository.delete(session);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Error deleting session: %s".formatted(e.getMessage()));
         }
     }
 

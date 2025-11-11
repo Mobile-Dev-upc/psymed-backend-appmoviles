@@ -3,10 +3,14 @@ package com.closedsource.psymed.platform.appointmentandadministration.interfaces
 import com.closedsource.psymed.platform.appointmentandadministration.domain.model.aggregates.Session;
 import com.closedsource.psymed.platform.appointmentandadministration.domain.services.SessionCommandService;
 import com.closedsource.psymed.platform.appointmentandadministration.domain.services.SessionQueryService;
+import com.closedsource.psymed.platform.appointmentandadministration.domain.model.commands.DeleteSessionCommand;
+import com.closedsource.psymed.platform.appointmentandadministration.domain.model.commands.UpdateSessionCommand;
 import com.closedsource.psymed.platform.appointmentandadministration.interfaces.rest.resources.CreateSessionResource;
 import com.closedsource.psymed.platform.appointmentandadministration.interfaces.rest.resources.SessionResource;
+import com.closedsource.psymed.platform.appointmentandadministration.interfaces.rest.resources.UpdateSessionResource;
 import com.closedsource.psymed.platform.appointmentandadministration.interfaces.rest.transform.CreateSessionCommandFromResourceAssembler;
 import com.closedsource.psymed.platform.appointmentandadministration.interfaces.rest.transform.SessionResourceFromEntityAssembler;
+import com.closedsource.psymed.platform.appointmentandadministration.interfaces.rest.transform.UpdateSessionCommandFromResourceAssembler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -43,5 +47,50 @@ public class SessionReservationController {
         return session
                 .map(s -> new ResponseEntity<>(SessionResourceFromEntityAssembler.toResourceFromEntity(s), CREATED))
                 .orElseGet(() -> ResponseEntity.badRequest().build());
+    }
+
+    @Operation(summary = "Update a reservation for patient")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Reservation updated successfully"),
+            @ApiResponse(responseCode = "404", description = "Session not found")})
+    @PutMapping("/{sessionId}")
+    public ResponseEntity<SessionResource> updateSession(
+            @PathVariable Long professionalId,
+            @PathVariable Long patientId,
+            @PathVariable Long sessionId,
+            @RequestBody UpdateSessionResource resource
+    ) {
+        UpdateSessionCommand command = UpdateSessionCommandFromResourceAssembler
+                .toCommandFromResource(professionalId, patientId, sessionId, resource);
+        try {
+            Optional<Session> session = sessionCommandService.handle(command);
+            return session
+                    .map(value -> ResponseEntity.ok(SessionResourceFromEntityAssembler.toResourceFromEntity(value)))
+                    .orElseGet(() -> ResponseEntity.badRequest().build());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @Operation(summary = "Delete a reservation for patient")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Reservation deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "Session not found")})
+    @DeleteMapping("/{sessionId}")
+    public ResponseEntity<Void> deleteSession(
+            @PathVariable Long professionalId,
+            @PathVariable Long patientId,
+            @PathVariable Long sessionId
+    ) {
+        try {
+            sessionCommandService.handle(new DeleteSessionCommand(sessionId, patientId, professionalId));
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 }
