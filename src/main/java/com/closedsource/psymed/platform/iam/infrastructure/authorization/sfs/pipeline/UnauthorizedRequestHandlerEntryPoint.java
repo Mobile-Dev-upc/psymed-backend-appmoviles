@@ -1,6 +1,5 @@
 package com.closedsource.psymed.platform.iam.infrastructure.authorization.sfs.pipeline;
 
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
@@ -17,7 +16,11 @@ public class UnauthorizedRequestHandlerEntryPoint implements AuthenticationEntry
 
 
     @Override
-    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authenticationException) throws IOException, ServletException {
+    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authenticationException) throws IOException {
         LOGGER.error("Unauthorized request: {}", authenticationException.getMessage());
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.getWriter().write("{\"message\":\"Full authentication is required to access this resource\"}");
+        response.getWriter().flush();
     }
 }

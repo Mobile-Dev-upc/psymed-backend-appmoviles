@@ -52,7 +52,7 @@ public class Session extends AbstractAggregateRoot<Session> {
     private Note note;
 
     @Getter
-    @OneToMany(mappedBy = "session", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "session", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Task> tasks = new ArrayList<>();
 
 

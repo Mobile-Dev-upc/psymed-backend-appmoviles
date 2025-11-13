@@ -77,6 +77,7 @@ public class SessionCommandServiceImpl implements SessionCommandService {
     }
 
     @Override
+    @Transactional
     public Optional<Task> handle(AddTaskToSessionCommand command) {
         if(!sessionRepository.existsById(command.sessionId())) throw new IllegalArgumentException("Session does not exist");
         try {
@@ -93,6 +94,7 @@ public class SessionCommandServiceImpl implements SessionCommandService {
     }
 
     @Override
+    @Transactional
     public void handle(UpdateTaskStatusToCompleteCommand command) {
         if(!sessionRepository.existsById(command.sessionId())) throw new IllegalArgumentException("Session does not exist");
         try{
@@ -106,6 +108,7 @@ public class SessionCommandServiceImpl implements SessionCommandService {
     }
 
     @Override
+    @Transactional
     public void handle(UpdateTaskStatusToIncompleteCommand command) {
         if(!sessionRepository.existsById(command.sessionId())) throw new IllegalArgumentException("Session does not exist");
         try{

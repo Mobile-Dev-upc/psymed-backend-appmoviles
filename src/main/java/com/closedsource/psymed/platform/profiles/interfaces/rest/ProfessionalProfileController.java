@@ -17,7 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(value = "api/v1/professional-profiles", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/v1/professional-profiles", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Professional Profile", description = "Professional Profiles Management Endpoints")
 public class ProfessionalProfileController {
     private final ProfessionalProfileCommandService professionalProfileCommandService;

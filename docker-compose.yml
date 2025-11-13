@@ -15,6 +15,8 @@ services:
       DATABASE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE}?useSSL=false&serverTimezone=UTC
       DATABASE_USERNAME: ${MYSQL_USER}
       DATABASE_PASSWORD: ${MYSQL_PASSWORD}
+      DATABASE_DRIVER: com.mysql.cj.jdbc.Driver
+      DATABASE_DIALECT: org.hibernate.dialect.MySQLDialect
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION_DAYS: ${JWT_EXPIRATION_DAYS:-7}
     ports:

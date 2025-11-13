@@ -46,7 +46,7 @@ public class TokenServiceImpl implements BearerTokenService {
     }
 
     private boolean isTokenPresentIn(String authorizationParameter) {
-        return authorizationParameter.startsWith(BEARER_TOKEN_PREFIX);
+        return authorizationParameter != null && authorizationParameter.startsWith(BEARER_TOKEN_PREFIX);
     }
 
     private String extractTokenFrom(String authorizationParameter) {
@@ -70,15 +70,21 @@ public class TokenServiceImpl implements BearerTokenService {
     }
 
     private boolean isBearerTokenIn(String authorizationParameter) {
-        return authorizationParameter.startsWith(BEARER_TOKEN_PREFIX);
+        return authorizationParameter != null && authorizationParameter.startsWith(BEARER_TOKEN_PREFIX);
     }
 
 
     @Override
     public String getBearerTokenFrom(HttpServletRequest token) {
         String parameter = getAuthorizationParameterFrom(token);
-        if(isTokenPresentIn(parameter) && isBearerTokenIn(parameter)) return extractTokenFrom(parameter);
+        if(!isTokenPresentIn(parameter) || !isBearerTokenIn(parameter)) {
+            return null;
+        }
+        if(parameter.length() <= TOKEN_START_INDEX) {
+            LOGGER.warn("Authorization header is present but does not contain a bearer token");
         return null;
+        }
+        return extractTokenFrom(parameter);
     }
 
     @Override
